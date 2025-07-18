@@ -283,6 +283,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         // Chỉ cho phép nếu cùng level và cùng cha
         if sourceItem.level == destinationItem.level && Array(sourceItem.path.dropLast()) == Array(destinationItem.path.dropLast()) {
             moveTask(from: sourceItem.path, to: destinationItem.path)
+            expandedTasks = [] // Reset trạng thái expand/collapse sau khi sắp xếp
             saveTasks() // <-- Đảm bảo gọi ở đây
             buildDisplayItems()
             tableView.reloadData()
