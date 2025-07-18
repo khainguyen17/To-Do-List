@@ -274,15 +274,22 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
     //Chế độ Sắp xếp
     // Cho phép di chuyển cell
     func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        return isEditMode && displayItems[indexPath.row].level == 0
+        return isEditMode // Bỏ điều kiện level == 0
     }
     // Xử lý việc di chuyển cell
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         let sourceItem = displayItems[sourceIndexPath.row]
         let destinationItem = displayItems[destinationIndexPath.row]
-        guard sourceItem.level == 0, destinationItem.level == 0 else { return }
-        let movedTask = tasks.remove(at: sourceItem.path[0])
-        tasks.insert(movedTask, at: destinationItem.path[0])
+        // Chỉ cho phép nếu cùng level và cùng cha
+        if sourceItem.level == destinationItem.level && Array(sourceItem.path.dropLast()) == Array(destinationItem.path.dropLast()) {
+            moveTask(from: sourceItem.path, to: destinationItem.path)
+            saveTasks() // <-- Đảm bảo gọi ở đây
+            buildDisplayItems()
+            tableView.reloadData()
+        } else {
+            buildDisplayItems()
+            tableView.reloadData()
+        }
     }
     // Ẩn nút xóa khi ở chế độ sắp xếp
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
@@ -379,6 +386,31 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         }
     }
     
+    // Hàm di chuyển task/subtask trong cây, chỉ dùng cho các item cùng cha
+    func moveTask(from sourcePath: [Int], to destinationPath: [Int]) {
+        if sourcePath.dropLast().isEmpty {
+            // Di chuyển ở root
+            let moved = tasks.remove(at: sourcePath.last!)
+            tasks.insert(moved, at: destinationPath.last!)
+        } else {
+            // Di chuyển ở subtask
+            var parent = tasks
+            var path = Array(sourcePath.dropLast()) // Đảm bảo path là [Int]
+            // Tìm đến cha
+            while path.count > 1 {
+                parent = parent[path.first!].subtasks
+                path = Array(path.dropFirst()) // Luôn là [Int]
+            }
+            let parentIdx = path.first!
+            // Thao tác trên parent[parentIdx].subtasks
+            let moved = parent[parentIdx].subtasks.remove(at: sourcePath.last!)
+            parent[parentIdx].subtasks.insert(moved, at: destinationPath.last!)
+            // Gán lại vào cây gốc
+            updateTask(at: &tasks, path: Array(sourcePath.dropLast())) { task in
+                task.subtasks = parent[parentIdx].subtasks
+            }
+        }
+    }
     
     
     // MARK: - UserDefaults
