@@ -20,7 +20,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var tasks: [TodoItem] = []
     
     var isAIMode = false
-    var selectedTaskPath: [Int]? = nil // Sử dụng path thay cho selectedTaskIndex
+    var selectedTaskPath: [Int]? = nil
     
     var expandedTasks: Set<String> = [] // Lưu key dạng "0-2-1" cho các node đang mở
     
@@ -43,7 +43,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         if isAIMode {
             guard let path = selectedTaskPath else {
                 // Hiện alert nếu chưa chọn task/subtask
-                let alert = UIAlertController(title: "Thông báo", message: "Hãy chọn một công việc để thêm subtask!", preferredStyle: .alert)
+                let alert = UIAlertController(title: "Warning", message: "Select a task to add a new subtask!", preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "OK", style: .default))
                 self.present(alert, animated: true)
                 return
@@ -81,7 +81,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
             sortButton.setTitle("", for: .normal)
             sortButton.backgroundColor = .clear
             tableView.setEditing(false, animated: true)
-            saveTasks() // Lưu thứ tự mới
+            saveTasks()
             buildDisplayItems()
             tableView.reloadData()
         }
@@ -92,7 +92,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
     @IBAction func subButtonTapped(_ sender: UIButton) {
         isAIMode.toggle()
         selectedTaskPath = nil
-        subButton.backgroundColor = isAIMode ? .systemBlue : .clear // Đổi màu 
+        subButton.backgroundColor = isAIMode ? .systemGreen : .clear
         tableView.reloadData()
         updateModeLabel()
     }
@@ -141,7 +141,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
             cell.taskLabel.attributedText = attributedText
         }
         // Lùi vào theo cấp độ lồng
-        cell.taskLabel.transform = CGAffineTransform(translationX: CGFloat(item.level) * 10, y: 0)
+        cell.taskLabel.transform = CGAffineTransform(translationX: CGFloat(item.level) * 15, y: 0)
 
         //Button checkbox
         cell.checkboxButton.setTitle(task.isDone ? "✅" : "⬜️", for: .normal)
@@ -151,7 +151,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
             self.toggleDone(at: item.path)
             self.saveTasks()
             self.buildDisplayItems()
-            self.tableView.reloadData() // <-- reload toàn bộ tableView
+            self.tableView.reloadData() // reload toàn bộ tableView
         }
 
         //Button xoá
@@ -171,12 +171,12 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         //Button sửa
         cell.editButtonAction = { [weak self] in
             guard let self = self else { return }
-            let alert = UIAlertController(title: "Sửa công việc", message: nil, preferredStyle: .alert)
+            let alert = UIAlertController(title: "Edit a task", message: nil, preferredStyle: .alert)
             alert.addTextField { textField in
                 textField.text = item.task.name
             }
-            alert.addAction(UIAlertAction(title: "Huỷ", style: .cancel))
-            alert.addAction(UIAlertAction(title: "Lưu", style: .default) { _ in
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
                 if let newName = alert.textFields?.first?.text, !newName.isEmpty {
                     self.renameTask(at: item.path, newName: newName)
                     self.saveTasks()
@@ -191,7 +191,6 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         let key = item.path.map { String($0) }.joined(separator: "-")
         if !task.subtasks.isEmpty {
             cell.expandButton.isHidden = false
-            // Bỏ setTitle
             cell.expandButton.setTitle("", for: .normal)
             cell.expandButtonAction = { [weak self] in
                 guard let self = self else { return }

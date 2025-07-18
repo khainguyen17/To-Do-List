@@ -10,7 +10,6 @@ import Foundation
 struct TodoItem: Codable {
     var name: String
     var isDone: Bool
-    // Thêm các properties mới:
     var subtasks: [TodoItem] = []
 
 }

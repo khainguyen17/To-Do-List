@@ -9,8 +9,8 @@ import Foundation
 
 class AIBreakdownService {
     static let shared = AIBreakdownService()
-    private let apiKey = "JkyB73VaUIrv0mCYngsciONeUGYwq81NtoKGe79t" // Thay bằng Cohere API key của bạn
-
+    private let apiKey = "JkyB73VaUIrv0mCYngsciONeUGYwq81NtoKGe79t" // Cohere API key
+    
     func breakdownTask(taskName: String, completion: @escaping ([String]?) -> Void) {
         let prompt = "List only the small steps to complete the task: \(taskName). Each step should be a single short sentence. Do not include any introduction, summary, bullet points, dashes, numbers, or any special characters at the beginning of each line. Only output the steps, each on a new line."
         let url = URL(string: "https://api.cohere.ai/v1/generate")!
@@ -20,7 +20,7 @@ class AIBreakdownService {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let body: [String: Any] = [
-            "model": "command", // hoặc "command-light" nếu quota thấp
+            "model": "command", 
             "prompt": prompt,
             "max_tokens": 200,
             "temperature": 0.7,
