@@ -75,6 +75,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
             sortButton.setTitle("", for: .normal)
             sortButton.backgroundColor = .systemGreen
             tableView.setEditing(true, animated: true)
+            tableView.reloadData()
         } else {
             // Thoát chế độ sắp xếp
             sortButton.setTitle("", for: .normal)
@@ -190,7 +191,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         let key = item.path.map { String($0) }.joined(separator: "-")
         if !task.subtasks.isEmpty {
             cell.expandButton.isHidden = false
-            // Bỏ setTitle, chỉ để nút expand/collapse không có chữ
+            // Bỏ setTitle
             cell.expandButton.setTitle("", for: .normal)
             cell.expandButtonAction = { [weak self] in
                 guard let self = self else { return }
@@ -207,7 +208,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         }
         
         // Ẩn các nút khi ở chế độ sắp xếp
-        cell.checkboxButton.isHidden = isEditMode
+        cell.aiButton.isHidden = isEditMode
         cell.editButton.isHidden = isEditMode
         cell.deleteButton.isHidden = isEditMode
         
@@ -274,12 +275,15 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
     //Chế độ Sắp xếp
     // Cho phép di chuyển cell
     func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        return isEditMode
+        return isEditMode && displayItems[indexPath.row].level == 0
     }
     // Xử lý việc di chuyển cell
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        let movedTask = tasks.remove(at: sourceIndexPath.row)
-        tasks.insert(movedTask, at: destinationIndexPath.row)
+        let sourceItem = displayItems[sourceIndexPath.row]
+        let destinationItem = displayItems[destinationIndexPath.row]
+        guard sourceItem.level == 0, destinationItem.level == 0 else { return }
+        let movedTask = tasks.remove(at: sourceItem.path[0])
+        tasks.insert(movedTask, at: destinationItem.path[0])
     }
     // Ẩn nút xóa khi ở chế độ sắp xếp
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
